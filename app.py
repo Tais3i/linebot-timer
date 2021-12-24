@@ -44,14 +44,14 @@ def callback():
 
 import time
 import datetime
-
+wb = load_workbook(filename='chatbot.xlsx')
+ws = wb['勉強時間']
 d_today = datetime.date.today()
+
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    wb = load_workbook(filename='chatbot.xlsx')
-    ws = wb['勉強時間']
-    i = 0
     if event.message.text == "開始":
+        i = 0
         i += 1
         ws[f'A{i}'] = d_today
         start_times[event.source.user_id] = time.time()
@@ -59,12 +59,14 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text="計測を開始します"))
     if event.message.text == "終了":
+        d = 0
+        d += 1
         elapsed_time = int(time.time() - start_times[event.source.user_id])
         del start_times[event.source.user_id]
         hour = elapsed_time // 3600
         minute = (elapsed_time % 3600) // 60
         second = elapsed_time % 60
-        ws[f'B{i}'] = "{hour}時間{minute}分{second}秒"
+        ws[f'B{d}'] = "{hour}時間{minute}分{second}秒"
         return line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=f"ただいまの勉強時間は{hour}時間{minute}分{second}秒でした。"))
