@@ -1,4 +1,7 @@
+from json import load
 from flask import Flask, request, abort
+
+from openpyxl import load_workbook
 
 from linebot import (
     LineBotApi, WebhookHandler
@@ -40,10 +43,17 @@ def callback():
     return 'OK'
 
 import time
+import datetime
 
+d_today = datetime.date.today()
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    wb = load_workbook(filename='chatbot.xlsx')
+    ws = wb['勉強時間']
+    i = 0
     if event.message.text == "開始":
+        i += 1
+        ws[f'A{i}'] = d_today
         start_times[event.source.user_id] = time.time()
         return line_bot_api.reply_message(
             event.reply_token,
@@ -54,6 +64,7 @@ def handle_message(event):
         hour = elapsed_time // 3600
         minute = (elapsed_time % 3600) // 60
         second = elapsed_time % 60
+        ws[f'B{i}'] = "{hour}時間{minute}分{second}秒"
         return line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=f"ただいまの勉強時間は{hour}時間{minute}分{second}秒でした。"))
