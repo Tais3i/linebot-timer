@@ -43,12 +43,12 @@ import time
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    if event.message.text == "勉強開始":
+    if event.message.text == "開始":
         start_times[event.source.user_id] = time.time()
         return line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="計測を開始しました"))
-    if event.message.text == "勉強終了":
+            TextSendMessage(text="計測を開始します"))
+    if event.message.text == "終了":
         elapsed_time = int(time.time() - start_times[event.source.user_id])
         del start_times[event.source.user_id]
         hour = elapsed_time // 3600
@@ -56,7 +56,7 @@ def handle_message(event):
         second = elapsed_time % 60
         return line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text=f"ただいまの勉強時間は{hour}時間{minute}分{second}秒です。"))
+            TextSendMessage(text=f"ただいまの勉強時間は{hour}時間{minute}分{second}秒でした。"))
 
 
 
