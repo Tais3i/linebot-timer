@@ -15,6 +15,8 @@ app = Flask(__name__)
 line_bot_api = LineBotApi('T9giHmlCfNjcHfexEI+U58VpDeMfElD/aXdga7ZckRrzfSsBDL2I1XXHkrIfeLTuaE+CfuTw5GSUzzmF5tOovfBItI3GyjkchU4lfAjzAf2hc/a25GIHfXQWnGagGMKtg8jqsjuagRg9maCqEik97wdB04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('6e937500d48e9a084c0e940419aa3358')
 
+start_times = {}
+
 @app.route("/")
 def test():
     return "OK"
@@ -37,29 +39,25 @@ def callback():
 
     return 'OK'
 
-from time import time
-users = {}
+import time
+
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    userId = event.source.user_id
     if event.message.text == "勉強開始":
-        reply_message ="計測を開始しました"
-        if not userId in users:
-            users[userId] = {}
-            users[userId]["total"] = 0
-        users[userId]["start"] = time()
-    else:
-        end = time()
-        difference = int(end - users[userId]["start"])
-        users[userId]["total"] += difference
-        hour = difference//3600
-        minute = difference%3600 //60
-        second = difference % 60
-        reply_message = f"ただいまの勉強時間は{hour}時間{minute}分{second}秒です。合計で{users[userId]['total']}秒でした"
-    
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=event.message.text))
+        start_times[event.source.user_id] = time.time()
+        return line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text="計測を開始しました"))
+    if event.message.text == "勉強終了":
+        elapsed_time = int(time.time() - start_times[event.source.user_id])
+        del start_times[event.source.user_id]
+        hour = elapsed_time // 3600
+        minute = (elapsed_time % 3600) // 60
+        second = elapsed_time % 60
+        return line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=f"ただいまの勉強時間は{hour}時間{minute}分{second}秒です。"))
+
 
 
 if __name__ == "__main__":
